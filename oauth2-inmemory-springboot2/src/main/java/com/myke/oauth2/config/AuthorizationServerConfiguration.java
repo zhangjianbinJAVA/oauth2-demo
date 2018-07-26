@@ -92,7 +92,7 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
                 // token 存储到redis
                 .tokenStore(new RedisTokenStore(redisConnectionFactory))
                 .authenticationManager(authenticationManager)
-                // 允许toke 断点 get 或 post
+                // 允许 GET、POST 请求获取 token，即访问端点：oauth/token
                 .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST);
     }
 

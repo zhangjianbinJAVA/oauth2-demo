@@ -70,8 +70,14 @@ product id : 1
 
 ### 源码分析
 
-#### 客户端身份认证核心过滤器ClientCredentialsTokenEndpointFilter（掌握）
+#### 认证 (authentication) 和授权 (authorization) 的区别
+你要登机，你需要出示你的身份证和机票，
+身份证是为了证明你张三确实是你张三，这就是 authentication；
+而机票是为了证明你张三确实买了票可以上飞机，这就是 authorization
+
+#### 客户端身份认证核心过滤器 ClientCredentialsTokenEndpointFilter（掌握）
 在请求到达/oauth/token之前经过了ClientCredentialsTokenEndpointFilter这个过滤器
+
 ````
 public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response)
         throws AuthenticationException, IOException, ServletException {
@@ -81,13 +87,26 @@ public Authentication attemptAuthentication(HttpServletRequest request, HttpServ
 
     ...
     clientId = clientId.trim();
+    
+    // 使用name和password封装成为 
     UsernamePasswordAuthenticationToken authRequest = new UsernamePasswordAuthenticationToken(clientId,
             clientSecret);
 
+     
+     // 进入 ProviderManager 类,最终由 DaoAuthenticationProvider 类中的 authenticate 进行认证
+     // authentication.getPrincipal()表示 client_id 的值，也表示 username 的值
+          
+     // 在 DaoAuthenticationProvider 的 retrieveUser 方法中的 this.getUserDetailsService() 的实现类 加载客户端详细信息
+     // this.getUserDetailsService() 的实现类 配置在 AuthorizationServerConfigurerAdapter 类中的方法中进行配置
     return this.getAuthenticationManager().authenticate(authRequest);
 
 }
 ````
+
+#### UserDetailsService 相关实现类
+![](image/userDetailsService-UML.png)
+
+
 
 #### 顶级身份管理者 AuthenticationManager（掌握）
 用来从请求中获取client_id,client_secret，组装成一个UsernamePasswordAuthenticationToken作为身份标识，
