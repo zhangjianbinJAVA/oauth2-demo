@@ -5,12 +5,16 @@ http://localhost:9070/oauth/token?grant_type=client_credentials&scope=all&client
 
 响应结果：
 {
-    "access_token": "69e01cb4-6735-4a89-bc5b-c6ef455b650c",
+    "access_token": "53bd3e15-3b5b-4655-b2f5-cc53d3913418",
     "token_type": "bearer",
     "expires_in": 359999,
     "scope": "all"
 }
 ````
+
+#### 访问资源
+http://localhost:9070/order/1?access_token=53bd3e15-3b5b-4655-b2f5-cc53d3913418
+
 
 #### password 模式
 ````
@@ -24,3 +28,4 @@ http://localhost:9070/oauth/token?username=admin&password=admin&grant_type=passw
     "scope": "all"
 }
 ````
+
