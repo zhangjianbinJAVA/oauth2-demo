@@ -10,6 +10,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>oauth2-inmemory-springboot2</module>
+        <module>oauth2-db-springboot2</module>
     </modules>
 
 
