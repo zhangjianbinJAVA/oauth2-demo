@@ -97,7 +97,10 @@ public Authentication attemptAuthentication(HttpServletRequest request, HttpServ
      // authentication.getPrincipal()表示 client_id 的值，也表示 username 的值
           
      // 在 DaoAuthenticationProvider 的 retrieveUser 方法中的 this.getUserDetailsService() 的实现类 加载客户端详细信息
-     // this.getUserDetailsService() 的实现类 配置在 AuthorizationServerConfigurerAdapter 类中的方法中进行配置
+     // this.getUserDetailsService() 的实现类 配置在 AuthorizationServerConfigurerAdapter 类中的 ClientDetailsServiceConfigurer 进行配置
+     
+     // 密码校验 在 DaoAuthenticationProvider类中的 additionalAuthenticationChecks 方法进行校验，
+     // 查看 passwordEncoder 变量获得当前配置的 密码加密方法
     return this.getAuthenticationManager().authenticate(authRequest);
 
 }
@@ -130,7 +133,7 @@ TokenEndpoint。
 
 
 #### Token处理端点TokenEndpoint（掌握）
-> 两个 ClientCredentialsTokenEndpointFilter 和 AuthenticationManager可以理解为一些前置校验，和身份封装
+> 这两个 ClientCredentialsTokenEndpointFilter 和 AuthenticationManager可以理解为一些前置校验，和身份封装
 
 ````
 @FrameworkEndpoint
@@ -142,7 +145,7 @@ public class TokenEndpoint extends AbstractEndpoint {
          ...
         String clientId = getClientId(principal);// 获取客户 id
         
-        // 根据 客户端id 获取 客户端详情
+        // 根据 客户端id 获取 客户端详情，客户端的相关请求参数在 BaseClientDetails 类中进行了定义，其它请求参数看 OAuth2Utils
         ClientDetails authenticatedClient = getClientDetailsService().loadClientByClientId(clientId);//<1>
         ...
         TokenRequest tokenRequest = getOAuth2RequestFactory().createTokenRequest(parameters, authenticatedClient);//<2>
@@ -158,13 +161,14 @@ public class TokenEndpoint extends AbstractEndpoint {
 ````
 
 - <1> 加载客户端信息
-- <2> 结合请求信息，创建TokenRequest
-- <3> 将TokenRequest传递给TokenGranter颁发token
+- <2> 结合请求信息，创建 TokenRequest，
+- <3> 将 TokenRequest 传递给TokenGranter颁发token
 
 真正的/oauth/token端点暴露在了我们眼前，其中方法参数中的 Principal 经过之前的过滤器，
-已经被填充了相关的信息，而方法的内部则是依赖了一个 TokenGranter 来颁发token。 
+已经被填充了相关的信息(debug 发现：可能是 UsernamePasswordAuthenticationToken 类，该类中的 principal 可能是 User 类 )，
+而方法的内部则是依赖了一个 TokenGranter 来颁发 token。 token 的返回值就是 OAuth2AccessToken 类。
 
-其中 OAuth2AccessToken 的实现类 DefaultOAuth2AccessToken 就是最终在控制台得到的 token序列化之前的原始类:
+其中 OAuth2AccessToken 的实现类 DefaultOAuth2AccessToken 就是最终在控制台得到的 token 序列化之前的原始类:
 
 ##### 一个典型的样例token响应,如下所示，就是上述类序列化后的结果
 ````
@@ -274,7 +278,8 @@ public interface AuthorizationServerTokenServices {
 }
 ````
 
-在默认的实现类 DefaultTokenServices 中，可以看到token是如何产生的，并且了解了框架对token进行哪些信息的关联
+**在默认的实现类 DefaultTokenServices 中，可以看到token是如何产生的，并且了解了框架对token进行哪些信息的关联**
+
 ````
     @Transactional
 	public OAuth2AccessToken createAccessToken(OAuth2Authentication authentication) throws AuthenticationException {
@@ -361,6 +366,9 @@ public class ResourceServerConfigurerAdapter implements ResourceServerConfigurer
 
 }
 ````
+#### HttpSecurity 可以配置的http安全项有
+![](./image/httpsecurity.png)
+
 
 #### ResourceServerSecurityConfigurer（了解）
 

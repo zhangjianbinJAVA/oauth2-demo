@@ -1,5 +1,8 @@
 package com.myke.oauth2.config;
 
+import com.myke.oauth2.resourceexception.AuthExceptionEntryPoint;
+import com.myke.oauth2.resourceexception.CustomAccessDeniedHandler;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
@@ -22,9 +25,17 @@ public class ResourceServerConfiguration extends ResourceServerConfigurerAdapter
     private static final String DEMO_RESOURCE_ID = "order";
 
 
+    @Autowired
+    private CustomAccessDeniedHandler customAccessDeniedHandler;
+
     @Override
     public void configure(ResourceServerSecurityConfigurer resources) {
         resources.resourceId(DEMO_RESOURCE_ID).stateless(true);
+
+        // 自定义 token 校验异常
+        resources.authenticationEntryPoint(new AuthExceptionEntryPoint());
+        resources.accessDeniedHandler(customAccessDeniedHandler);
+
     }
 
     /**

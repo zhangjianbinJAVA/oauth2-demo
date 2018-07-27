@@ -9,6 +9,7 @@ package com.myke.oauth2.config;
  * ================================
  */
 
+import com.myke.oauth2.authorizationexception.CustomWebResponseExceptionTranslator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -45,6 +46,9 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
 
     @Autowired
     RedisConnectionFactory redisConnectionFactory;
+
+    @Autowired
+    private CustomWebResponseExceptionTranslator customWebResponseExceptionTranslator;
 
     /**
      * 配置OAuth2的客户端相关信息
@@ -94,6 +98,9 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
                 .authenticationManager(authenticationManager)
                 // 允许 GET、POST 请求获取 token，即访问端点：oauth/token
                 .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST);
+
+        // 指定自定义 customWebResponseExceptionTranslator
+        endpoints.exceptionTranslator(customWebResponseExceptionTranslator);
     }
 
     /**
