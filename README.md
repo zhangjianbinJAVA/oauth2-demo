@@ -11,3 +11,15 @@ OAuth允许用户提供一个令牌，而不是用户名和密码来访问他们
 - 简化模式（implicit）
 - 密码模式（resource owner password credentials）
 - 客户端模式（client credentials）
+
+
+#### 参考
+spring-security 4   
+https://docs.spring.io/spring-security/site/docs/4.2.3.RELEASE/reference/htmlsingle/    
+
+
+spring-security 5   
+https://docs.spring.io/spring-security/site/docs/5.0.4.RELEASE/reference/htmlsingle/    
+
+- spring security 5 对 PasswordEncoder 做了相关的重构
+

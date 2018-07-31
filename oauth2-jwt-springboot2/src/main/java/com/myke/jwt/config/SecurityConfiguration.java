@@ -1,20 +1,21 @@
-package com.myke.oauth2.config;
+package com.myke.jwt.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.JdbcTokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
+import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
 
 import javax.sql.DataSource;
 
@@ -40,9 +41,30 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
      */
     @Bean
     TokenStore tokenStore() {
-        return new JdbcTokenStore(dataSource);
+        return new JwtTokenStore(jwtAccessTokenConverter());
     }
 
+    /**
+     * 用于生成jwt
+     *
+     * @return
+     */
+    @Bean
+    public JwtAccessTokenConverter jwtAccessTokenConverter() {
+        JwtAccessTokenConverter accessTokenConverter = new JwtAccessTokenConverter();
+        accessTokenConverter.setSigningKey("merryyou");//生成签名的key
+        return accessTokenConverter;
+    }
+
+    /**
+     * 用于扩展JWT
+     * @return
+     */
+    @Bean
+    @ConditionalOnMissingBean(name = "jwtTokenEnhancer")
+    public TokenEnhancer jwtTokenEnhancer(){
+        return new CustomJwtTokenEnhancer();
+    }
 
     /**
      * 密码明文验证
@@ -59,7 +81,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         // 配置 UserDetailsService,并设置数据源
         auth.jdbcAuthentication().dataSource(dataSource);
-
     }
 
     /**
@@ -86,13 +107,8 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 // 对请求进行认证
                 .authorizeRequests()
-                .antMatchers("/oauth/**", "/druid/*", "/mappings").permitAll()
+                .antMatchers("/oauth/**", "/druid/*").permitAll()
                 .antMatchers("/**").permitAll();
         // @formatter:on
-    }
-
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers( "/info", "/error","/mappings");
     }
 }

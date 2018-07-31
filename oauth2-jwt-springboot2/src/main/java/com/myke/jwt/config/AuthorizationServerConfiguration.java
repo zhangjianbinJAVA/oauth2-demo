@@ -1,4 +1,4 @@
-package com.myke.oauth2.config;
+package com.myke.jwt.config;
 
 /**
  * @author： zhangjianbin <br/>
@@ -21,6 +21,7 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.provider.token.TokenEnhancer;
 import org.springframework.security.oauth2.provider.token.TokenEnhancerChain;
 import org.springframework.security.oauth2.provider.token.TokenStore;
+import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
 
 import javax.sql.DataSource;
 import java.util.ArrayList;
@@ -43,6 +44,11 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     @Autowired
     private TokenStore tokenStore;
 
+    @Autowired(required = false)
+    private JwtAccessTokenConverter jwtAccessTokenConverter;
+
+    @Autowired(required = false)
+    private TokenEnhancer jwtTokenEnhancer;
 
     /**
      * 配置OAuth2的客户端相关信息
@@ -52,7 +58,6 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
      */
     @Override
     public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
-        //从数据库中获取clientDetails信息
         clients.jdbc(dataSource);
     }
 
@@ -72,7 +77,18 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
                 // 允许 GET、POST 请求获取 token，即访问端点：oauth/token
                 .allowedTokenEndpointRequestMethods(HttpMethod.GET, HttpMethod.POST);
 
+        //扩展token返回结果
+        if (jwtAccessTokenConverter != null && jwtTokenEnhancer != null) {
+            TokenEnhancerChain tokenEnhancerChain = new TokenEnhancerChain();
+            List<TokenEnhancer> enhancerList = new ArrayList();
+            enhancerList.add(jwtTokenEnhancer);
+            enhancerList.add(jwtAccessTokenConverter);
+            tokenEnhancerChain.setTokenEnhancers(enhancerList);
 
+            //jwt
+            endpoints.tokenEnhancer(tokenEnhancerChain)
+                    .accessTokenConverter(jwtAccessTokenConverter);
+        }
     }
 
     /**
@@ -86,12 +102,6 @@ public class AuthorizationServerConfiguration extends AuthorizationServerConfigu
     public void configure(AuthorizationServerSecurityConfigurer oauthServer) throws Exception {
         //允许表单认证
         oauthServer.allowFormAuthenticationForClients();
-
-        //公开/oauth/token的接口
-        oauthServer
-                .tokenKeyAccess("permitAll()")
-                //allow check token;
-                .checkTokenAccess("isAuthenticated()");
     }
 
 }

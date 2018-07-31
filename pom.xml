@@ -11,6 +11,8 @@
     <modules>
         <module>oauth2-inmemory-springboot2</module>
         <module>oauth2-db-springboot2</module>
+        <module>spring-security-ipLogin</module>
+        <module>oauth2-jwt-springboot2</module>
     </modules>
 
 
