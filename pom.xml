@@ -13,6 +13,8 @@
         <module>oauth2-db-springboot2</module>
         <module>spring-security-ipLogin</module>
         <module>oauth2-jwt-springboot2</module>
+        <module>oauth2-db-oauth-server-springboot1.5</module>
+        <module>oauth2-db-oauth-resource-springboot1.5</module>
     </modules>
 
 
